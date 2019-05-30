@@ -1,0 +1,24 @@
+{
+  "name": "amqp_nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "amqp_subs.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vesanthosh/amqp_nodejs.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vesanthosh/amqp_nodejs/issues"
+  },
+  "homepage": "https://github.com/vesanthosh/amqp_nodejs#readme",
+  "dependencies": {
+    "amqplib": "^0.5.3",
+    "mongodb": "^3.2.6",
+    "mqtt": "^3.0.0"
+  }
+}
