@@ -11,7 +11,7 @@ var elasticsearch = require('elasticsearch');
 var indexName = 'device001'; // Soon document type will be removed from elasticsearch. So, gave device name as index name.
 var typeName = 'logs';
 var elasticClient = new elasticsearch.Client({
-	host: '192.168.99.100:9200',
+	host: '<username>:<password>@192.168.99.100:9200',
 	log: 'trace'
 });
 // Check the index and if it does not exist then create one.
