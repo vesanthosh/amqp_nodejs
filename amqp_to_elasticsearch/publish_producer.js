@@ -8,7 +8,8 @@ client.on('connect', function () {
 
 // Connection for Elasticsearch
 var elasticsearch = require('elasticsearch');
-var indexName = 'device';
+var indexName = 'device001'; // Soon document type will be removed from elasticsearch. So, gave device name as index name.
+var typeName = 'logs';
 var elasticClient = new elasticsearch.Client({
 	host: '192.168.99.100:9200',
 	log: 'trace'
@@ -31,7 +32,7 @@ elasticClient.indices.exists({
 // Creating index mappling in Elasticsearch
 elasticClient.indices.putMapping({
 	index: indexName,
-	type: 'testDevice',
+	type: typeName,
 	include_type_name: true,
 	body: {
 		properties: {
@@ -64,8 +65,6 @@ elasticClient.indices.putMapping({
 
 // Connection for AMQP
 var amqp = require('amqplib/callback_api');
-var amqp_channel;
-var exchange;
 amqp.connect('amqp://192.168.99.100', function (error0, connection) {
 	if (error0) {
 		throw error0;
@@ -74,29 +73,29 @@ amqp.connect('amqp://192.168.99.100', function (error0, connection) {
 		if (error1) {
 			throw error1;
 		}
-		exchange = 'hello';
+		var exchange = 'hello';
 		channel.assertExchange(exchange, 'fanout', {
 			durable: false
 		});
-		amqp_channel = channel;
+		// Get MQTT data, forward data to AMQP and store data to Elasticsearch
+		client.on('message', function (topic, message) {
+			var mqtt_data = JSON.parse(message);
+			channel.publish(exchange, '', Buffer.from(message));
+			console.log("[x] Sent through AMQP: %s", message);
+			elasticClient.index({
+				index: indexName,
+				type: typeName,
+				id: message.id,
+				body: mqtt_data
+			}, function (err, resp, status) {
+				if (err) {
+					console.log(err);
+				} else {
+					console.log(resp)
+				}
+			});
+		});
 	});
 });
 
-// Get MQTT data, forward data to AMQP and store data to Elasticsearch
-client.on('message', function (topic, message) {
-	var mqtt_data = JSON.parse(message);
-	// amqp_channel.publish(exchange, '', Buffer.from(mqtt_data)); // Here, sometimes we get error related to sendToQueue
-	// console.log("[x] Sent through AMQP: %s", mqtt_data);
-	elasticClient.index({
-		index: indexName,
-		type: 'testDevice',
-		id: message.id,
-		body: mqtt_data
-	}, function (err, resp, status) {
-		if (err) {
-			console.log(err);
-		} else {
-			console.log(resp)
-		}
-	});
-});
+
